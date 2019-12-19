@@ -29,6 +29,14 @@ def run():
     boom_music.set_volume(0.2)
     plane = Plane()
     clock = pygame.time.Clock()
+    # 血量
+    health_image = pygame.image.load(r'image/health.png').convert_alpha()
+    # 分数图片
+    score_image = []
+    for i in range(10):
+        path = 'image/' + str(i) + '.png'
+        number_image = pygame.image.load(path)
+        score_image.append(number_image)
     # 生成子弹
     bullet_list = []
     bullet_index = 0
@@ -45,7 +53,7 @@ def run():
     boss = Boss(bg_size[0], bg_size[1])
     # 播放b背景音乐
     if not bg_music.get_busy():
-        bg_music.play()
+        bg_music.play(-1)
     # 延迟
     delay = 100
     running = True
@@ -64,6 +72,7 @@ def run():
         if key_pressed[K_d] or key_pressed[K_RIGHT]:
             plane.moveRight()
         screen.blit(bg_image, (0, 0))
+        screen.blit(health_image, (0, 0))
         screen.blit(plane.image, plane.rect)
         position = plane.rect.midtop
         position = (position[0] - 3, position[1])
@@ -84,6 +93,7 @@ def run():
             if each.active:
                 collide_enemies = pygame.sprite.spritecollide(each, enemies, False, pygame.sprite.collide_mask)
                 if collide_enemies:
+                    plane.score += 1
                     boom_music.play()
                     screen.blit(boom_image, each.rect)
                     each.active = False
@@ -92,6 +102,14 @@ def run():
                 else:
                     each.move()
                     screen.blit(each.image, each.rect)
+        # 绘制分数
+        score = str(plane.score)
+        score = score[::-1]
+        score_position = 880
+        for number in score:
+            screen.blit(score_image[int(number)], (score_position, 0))
+            score_position -= 20
+        score_position = 880
         # 若敌机存在则绘制
         for each in enemies:
             if each.active:

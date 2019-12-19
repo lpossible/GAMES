@@ -10,6 +10,7 @@ class Plane(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = 397, 432
         self.speed = 10
+        self.score = 0
         self.mask = pygame.mask.from_surface(self.image)
 
     def moveUp(self):
