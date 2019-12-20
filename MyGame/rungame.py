@@ -9,6 +9,7 @@ import pygame
 
 def run():
     """主函数"""
+    pygame.init()
     bg_size = 900, 515
     pygame.display.set_caption('My_game')
     screen = pygame.display.set_mode(bg_size)
@@ -27,7 +28,9 @@ def run():
     # 爆炸声音
     boom_music = pygame.mixer.Sound(r'media/boom.wav')
     boom_music.set_volume(0.2)
+    # 添加我方主机
     plane = Plane()
+    # 游戏帧率设置
     clock = pygame.time.Clock()
     # 血量
     health_image = pygame.image.load(r'image/health.png').convert_alpha()
@@ -40,89 +43,102 @@ def run():
     # 生成子弹
     bullet_list = []
     bullet_index = 0
-    bullet_num = 8
-    for i in range(bullet_num):
+    BULLET_NUM = 6
+    for i in range(BULLET_NUM):
         bullet_list.append(Bullet(plane.rect.midtop))
+    # 设置敌机生成延迟
     # 创建敌机
     enemies = pygame.sprite.Group()
-    enemies_num = 5
-    for i in range(enemies_num):
+    ENEMY_NUM = 10
+    for i in range(ENEMY_NUM):
         enemies.add(Enemy(bg_size[0], bg_size[1]))
     # 创建boos敌机
-    enemies_death_num = 0
     boss = Boss(bg_size[0], bg_size[1])
+    enemies.add(boss)
+    # 创建暂停按钮
+    pause_image = pygame.image.load('image/pause.png').convert_alpha()
+    pause_rect = pause_image.get_rect()
     # 播放b背景音乐
     if not bg_music.get_busy():
         bg_music.play(-1)
     # 延迟
     delay = 100
+    # 设置位置
+    score_position = 850
+    # 设置暂停
+    pause = False
+    # 设置是否允许程序
     running = True
     while running:
+        key_pressed = pygame.key.get_pressed()
         for event in pygame.event.get():
             if event.type == QUIT:
                 running = False
-        # 检测用户键盘操作
-        key_pressed = pygame.key.get_pressed()
-        if key_pressed[K_w] or key_pressed[K_UP]:
-            plane.moveUp()
-        if key_pressed[K_s] or key_pressed[K_DOWN]:
-            plane.moveDown()
-        if key_pressed[K_a] or key_pressed[K_LEFT]:
-            plane.moveLeft()
-        if key_pressed[K_d] or key_pressed[K_RIGHT]:
-            plane.moveRight()
+            # 判断是否发生暂停
+            elif key_pressed[K_SPACE]:
+                pause = not pause
+        # 如果未暂停
+        if not pause:
+            # 检测用户键盘操作
+            if key_pressed[K_w] or key_pressed[K_UP]:
+                plane.moveUp()
+            if key_pressed[K_s] or key_pressed[K_DOWN]:
+                plane.moveDown()
+            if key_pressed[K_a] or key_pressed[K_LEFT]:
+                plane.moveLeft()
+            if key_pressed[K_d] or key_pressed[K_RIGHT]:
+                plane.moveRight()
+            position = plane.rect.midtop
+            position = (position[0] - 3, position[1])
+            # 每过一定时间重置出界子弹
+            if not (delay % 6):
+                bullet_list[bullet_index].reset(position)
+                bullet_index = (bullet_index + 1) % BULLET_NUM
+                for each in enemies:
+                    if not each.active:
+                        each.reset()
+                        each.active = True
+            # 对于子弹列表，若存活，便绘制
+            for each in bullet_list:
+                if each.active:
+                    collide_enemies = pygame.sprite.spritecollide(each, enemies, False, pygame.sprite.collide_mask)
+                    if collide_enemies:
+                        plane.score += 1
+                        boom_music.play()
+                        screen.blit(boom_image, each.rect)
+                        each.active = False
+                        for enemy in collide_enemies:
+                            enemy.active = False
+                    else:
+                        each.move()
+                        screen.blit(each.image, each.rect)
+            # 若敌机存活，则移动
+            for each in enemies:
+                each.move()
+            if delay:
+                delay -= 1
+            else:
+                delay = 100
+        # 绘制背景，血量，分数和暂停,飞机
         screen.blit(bg_image, (0, 0))
         screen.blit(health_image, (0, 0))
+        screen.blit(pause_image, (870, 0))
         screen.blit(plane.image, plane.rect)
-        position = plane.rect.midtop
-        position = (position[0] - 3, position[1])
-        # 每过一定时间重置出界子弹和敌机
-        if not (delay % 6):
-            bullet_list[bullet_index].reset(position)
-            bullet_index = (bullet_index + 1) % bullet_num
-            for each in enemies:
-                if not each.active:
-                    each.reset()
-                    each.active = True
-                    enemies_death_num += 1
-        if enemies_death_num > 20 and boss.active:
-            screen.blit(boss.image, boss.rect)
-            boss.move()
-        # 对于子弹列表，若存活，便绘制
-        for each in bullet_list:
-            if each.active:
-                collide_enemies = pygame.sprite.spritecollide(each, enemies, False, pygame.sprite.collide_mask)
-                if collide_enemies:
-                    plane.score += 1
-                    boom_music.play()
-                    screen.blit(boom_image, each.rect)
-                    each.active = False
-                    for enemy in collide_enemies:
-                        enemy.active = False
-                else:
-                    each.move()
-                    screen.blit(each.image, each.rect)
         # 绘制分数
         score = str(plane.score)
         score = score[::-1]
-        score_position = 880
         for number in score:
             screen.blit(score_image[int(number)], (score_position, 0))
             score_position -= 20
-        score_position = 880
+        score_position = 850
         # 若敌机存在则绘制
         for each in enemies:
             if each.active:
                 screen.blit(each.image, each.rect)
-                each.move()
-        if enemies_death_num > 50:
-            enemies_death_num = 0
-            boss.active = True
-            boss.reset()
-        if delay:
-            delay -= 1
-        else:
-            delay = 100
-        clock.tick(30)
+        # 对于子弹列表，若存活，便绘制
+        for each in bullet_list:
+            if each.active:
+                screen.blit(each.image, each.rect)
+        clock.tick(60)
         pygame.display.flip()
     pygame.quit()
