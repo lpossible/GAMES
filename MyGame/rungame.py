@@ -14,6 +14,10 @@ def run():
     pygame.display.set_caption('My_game')
     screen = pygame.display.set_mode(bg_size)
     bg_image = pygame.image.load(r'image/background.png').convert_alpha()
+    # 颜色预定义
+    BLACK = (0, 0, 0)
+    RED = (255, 0, 0)
+    GREEN = (0, 255, 0)
     # 爆炸图片
     boom_image = pygame.image.load(r'image/boom.png').convert_alpha()
     # 调用背景音乐
@@ -46,14 +50,15 @@ def run():
     BULLET_NUM = 6
     for i in range(BULLET_NUM):
         bullet_list.append(Bullet(plane.rect.midtop))
-    # 设置敌机生成延迟
     # 创建敌机
     enemies = pygame.sprite.Group()
     ENEMY_NUM = 10
     for i in range(ENEMY_NUM):
         enemies.add(Enemy(bg_size[0], bg_size[1]))
     # 创建boos敌机
+    boss_enemies = pygame.sprite.Group()
     boss = Boss(bg_size[0], bg_size[1])
+    boss_enemies.add(boss)
     enemies.add(boss)
     # 创建暂停按钮
     pause_image = pygame.image.load('image/pause.png').convert_alpha()
@@ -70,13 +75,16 @@ def run():
     # 设置是否允许程序
     running = True
     while running:
-        key_pressed = pygame.key.get_pressed()
         for event in pygame.event.get():
             if event.type == QUIT:
                 running = False
-            # 判断是否发生暂停
-            elif key_pressed[K_SPACE]:
-                pause = not pause
+        # 设置按键检测
+        key_pressed = pygame.key.get_pressed()
+        # 判断是否发生暂停
+        if key_pressed[K_SPACE]:
+            pause = not pause
+        # 绘制背景
+        screen.blit(bg_image, (0, 0))
         # 如果未暂停
         if not pause:
             # 检测用户键盘操作
@@ -98,6 +106,8 @@ def run():
                     if not each.active:
                         each.reset()
                         each.active = True
+                        if each in boss_enemies:
+                            each.health = 100
             # 对于子弹列表，若存活，便绘制
             for each in bullet_list:
                 if each.active:
@@ -108,10 +118,15 @@ def run():
                         screen.blit(boom_image, each.rect)
                         each.active = False
                         for enemy in collide_enemies:
-                            enemy.active = False
+                            if enemy in boss_enemies:
+                                enemy.health -= 2
+                                if enemy.health == 0:
+                                    enemy.active = False
+                            else:
+                                enemy.active = False
                     else:
                         each.move()
-                        screen.blit(each.image, each.rect)
+                        # screen.blit(each.image, each.rect)
             # 若敌机存活，则移动
             for each in enemies:
                 each.move()
@@ -120,7 +135,6 @@ def run():
             else:
                 delay = 100
         # 绘制背景，血量，分数和暂停,飞机
-        screen.blit(bg_image, (0, 0))
         screen.blit(health_image, (0, 0))
         screen.blit(pause_image, (870, 0))
         screen.blit(plane.image, plane.rect)
@@ -131,10 +145,23 @@ def run():
             screen.blit(score_image[int(number)], (score_position, 0))
             score_position -= 20
         score_position = 850
-        # 若敌机存在则绘制
+        # 若敌机存在则绘制,
         for each in enemies:
             if each.active:
                 screen.blit(each.image, each.rect)
+                if each in boss_enemies:
+                    health_percent = each.health / 100
+                    pygame.draw.line(screen, BLACK, (each.rect.left, each.rect.top - 5),
+                                     (each.rect.right, each.rect.top - 5), 2)
+                    if health_percent > 0.2:
+                        pygame.draw.line(screen, GREEN,
+                                         (each.rect.left, each.rect.top - 5),
+                                         (each.rect.left + health_percent * each.rect.width, each.rect.top - 5), 2)
+                    else:
+                        pygame.draw.line(screen, RED,
+                                         (each.rect.left, each.rect.top - 5),
+                                         (each.rect.left + health_percent * each.rect.width, each.rect.top - 5), 2)
+
         # 对于子弹列表，若存活，便绘制
         for each in bullet_list:
             if each.active:

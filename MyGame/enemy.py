@@ -14,7 +14,7 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = random.randint(0, self.width - self.rect.width), random.randint(
             -3 * self.height, -2 * self.height)
-        self.speed = [0, random.randint(3, 6)]
+        self.speed = [0, random.randint(3, 5)]
         self.active = True
         self.mask = pygame.mask.from_surface(self.image)
 
@@ -28,4 +28,4 @@ class Enemy(pygame.sprite.Sprite):
         """reset"""
         self.rect.left, self.rect.top = random.randint(0, self.width - self.rect.width), random.randint(
             -3 * self.height, -2 * self.height)
-        self.speed = [0, random.randint(4, 10)]
+        self.speed = [0, random.randint(3, 5)]

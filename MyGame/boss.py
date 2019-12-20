@@ -14,7 +14,8 @@ class Boss(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = random.randint(0, self.width - self.rect.width), random.randint(
             -6 * self.height, -4 * self.height)
-        self.speed = [0, random.randint(1, 3)]
+        self.health = 100
+        self.speed = [0, 1]
         self.active = True
 
     def move(self):
@@ -27,4 +28,3 @@ class Boss(pygame.sprite.Sprite):
         """reset"""
         self.rect.left, self.rect.top = random.randint(0, self.width - self.rect.width), random.randint(
             -6 * self.height, -4 * self.height)
-        self.speed = [0, random.randint(2, 5)]
