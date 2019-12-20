@@ -25,10 +25,8 @@ def run():
     bg_music = pygame.mixer.music
     bg_music.load(r'media/bg_music.mp3')
     bg_music.set_volume(10)
-    # 设置
-    # 射击声音
-    shoot_music = pygame.mixer.Sound(r'media/shoot2.wav')
-    shoot_music.set_volume(0.2)
+    # 设置血量显示
+    hp_image = pygame.image.load('image/hp.png')
     # 爆炸声音
     boom_music = pygame.mixer.Sound(r'media/boom.wav')
     boom_music.set_volume(0.2)
@@ -36,8 +34,6 @@ def run():
     plane = Plane()
     # 游戏帧率设置
     clock = pygame.time.Clock()
-    # 血量
-    health_image = pygame.image.load(r'image/health.png').convert_alpha()
     # 分数图片
     score_image = []
     for i in range(10):
@@ -62,7 +58,6 @@ def run():
     enemies.add(boss)
     # 创建暂停按钮
     pause_image = pygame.image.load('image/pause.png').convert_alpha()
-    pause_rect = pause_image.get_rect()
     # 播放b背景音乐
     if not bg_music.get_busy():
         bg_music.play(-1)
@@ -126,7 +121,13 @@ def run():
                                 enemy.active = False
                     else:
                         each.move()
-                        # screen.blit(each.image, each.rect)
+            # 检测我方飞机与敌方碰撞
+            collide_plane = pygame.sprite.spritecollide(plane, enemies, False, pygame.sprite.collide_mask)
+            if collide_plane:
+                for each in collide_plane:
+                    if each not in boss_enemies:
+                        each.active = False
+                    plane.health -= 1
             # 若敌机存活，则移动
             for each in enemies:
                 each.move()
@@ -135,7 +136,16 @@ def run():
             else:
                 delay = 100
         # 绘制背景，血量，分数和暂停,飞机
-        screen.blit(health_image, (0, 0))
+        screen.blit(hp_image, (0, 0))
+        plane_heath_percent = float(plane.health) / 100
+        pygame.draw.line(screen, BLACK, (50, 16),
+                         (150, 16), 15)
+        if plane_heath_percent > 0.5:
+            pygame.draw.line(screen, GREEN, (50, 16),
+                             (plane_heath_percent * 100 + 50, 16), 15)
+        else:
+            pygame.draw.line(screen, RED, (50, 16),
+                             (plane_heath_percent * 100 + 50, 16), 15)
         screen.blit(pause_image, (870, 0))
         screen.blit(plane.image, plane.rect)
         # 绘制分数
@@ -151,16 +161,16 @@ def run():
                 screen.blit(each.image, each.rect)
                 if each in boss_enemies:
                     health_percent = each.health / 100
-                    pygame.draw.line(screen, BLACK, (each.rect.left, each.rect.top - 5),
-                                     (each.rect.right, each.rect.top - 5), 2)
+                    pygame.draw.line(screen, BLACK, (each.rect.left, each.rect.top - 3),
+                                     (each.rect.right, each.rect.top - 3), 2)
                     if health_percent > 0.2:
                         pygame.draw.line(screen, GREEN,
-                                         (each.rect.left, each.rect.top - 5),
-                                         (each.rect.left + health_percent * each.rect.width, each.rect.top - 5), 2)
+                                         (each.rect.left, each.rect.top - 3),
+                                         (each.rect.left + health_percent * each.rect.width, each.rect.top - 3), 2)
                     else:
                         pygame.draw.line(screen, RED,
-                                         (each.rect.left, each.rect.top - 5),
-                                         (each.rect.left + health_percent * each.rect.width, each.rect.top - 5), 2)
+                                         (each.rect.left, each.rect.top - 3),
+                                         (each.rect.left + health_percent * each.rect.width, each.rect.top - 3), 2)
 
         # 对于子弹列表，若存活，便绘制
         for each in bullet_list:

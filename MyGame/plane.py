@@ -11,6 +11,7 @@ class Plane(pygame.sprite.Sprite):
         self.rect.left, self.rect.top = 397, 432
         self.speed = 10
         self.score = 0
+        self.health = 100
         self.mask = pygame.mask.from_surface(self.image)
 
     def moveUp(self):
