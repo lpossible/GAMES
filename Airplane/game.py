@@ -1,6 +1,6 @@
 """主文件"""
 from tkinter import *
-from MyGame.rungame import *
+from Airplane.rungame import *
 import pygame
 
 
@@ -29,7 +29,6 @@ def main():
     canvas.create_window(180, 542, window=Button(root, image=about_button_img, relief=RIDGE))
     if not bg_music.get_busy():
         bg_music.play()
-
     mainloop()
 
 

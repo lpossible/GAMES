@@ -1,9 +1,9 @@
 """运行函数"""
 from pygame.locals import *
-from MyGame.plane import *
-from MyGame.bullet import *
-from MyGame.enemy import *
-from MyGame.boss import *
+from Airplane.plane import *
+from Airplane.bullet import *
+from Airplane.enemy import *
+from Airplane.boss import *
 import pygame
 
 
@@ -73,11 +73,13 @@ def run():
         for event in pygame.event.get():
             if event.type == QUIT:
                 running = False
+            if event.type == KEYDOWN and event.key == K_SPACE:
+                pause = not pause
         # 设置按键检测
         key_pressed = pygame.key.get_pressed()
         # 判断是否发生暂停
-        if key_pressed[K_SPACE]:
-            pause = not pause
+        # if key_pressed[K_SPACE]:
+        #     pause = not pause
         # 绘制背景
         screen.blit(bg_image, (0, 0))
         # 如果未暂停
@@ -176,6 +178,8 @@ def run():
         for each in bullet_list:
             if each.active:
                 screen.blit(each.image, each.rect)
+        # 设置允许的事件
+        pygame.event.set_blocked(KEYUP)
         clock.tick(60)
         pygame.display.flip()
     pygame.quit()
