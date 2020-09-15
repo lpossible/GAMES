@@ -6,4 +6,6 @@ rungame.py为游戏运行文件
 
 TowerDdfend
 towergame.py为运行文件，暂时只添加了敌军加载，炮塔建造，血量显示，bgm，分数和血量显示。
+
+游戏效果可在我的博客中看到，博客地址：https://blog.csdn.net/qq_41620823
  
